@@ -1,22 +1,26 @@
 import 'package:dart_jwt/dart_jwt.dart';
-import 'package:test/expect.dart';
 
 void main(List<String> arguments) {
-  var accountId = "633f2c6b88ed2ebef97ee604";
+  //
+  var accountId = "";
 
-  var accessKey =
-      "OWQ2YTBkZjEtYjhiMy0zNDE0LTgzMmQtZWQzNzU4M2FkZTMxIDYzM2YyYzZiODhlZDJlYmVmOTdlZTYwNCBVU0VSX0RFRkFVTFRfTkFNRQ";
+  var accessKey = "";
 
-  var secretKey = "a31SmSK9aoCihzhvCc11BK26G7rxrMdBxRcu1D36dVM";
+  var secretKey = "";
 
-  String query = "projectId=10000&versionId=-1";
+  String query = "";
 
-  var actionApi = "cycles/search";
+  var actionApi = "execution/ddec9811-eb83-4d53-a3fb-73fc7b1da762";
 
   var peticion = Zephyr(secretKey, accessKey, accountId);
-  //peticion.getMethod(
-  //'/public/rest/api/1.0/cycles/search', 'projectId=10002&versionId=-1');
 
-  peticion.getMethod("/public/rest/api/1.0/$actionApi", query);
-  //Zephyr.getInfo2();
+  var bodyrequest = {
+    'status': {'id': 1},
+    'projectId': 10000,
+    'issueId': 10003,
+    'cycleId': '4a6963ef-a4a9-471b-8e25-ce270a20bd3d',
+    'versionId': -1
+  };
+
+  peticion.putMethod("/public/rest/api/1.0/$actionApi", query, bodyrequest);
 }

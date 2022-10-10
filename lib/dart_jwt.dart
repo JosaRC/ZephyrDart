@@ -1,6 +1,5 @@
 // ignore: depend_on_referenced_packages
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'dart:io';
@@ -80,6 +79,126 @@ class Zephyr {
       // Process the response
       final stringData = await response.transform(utf8.decoder).join();
       print("Esta es la informacion: $stringData");
+    } finally {
+      client.close();
+    }
+  }
+
+  void postMethod(String relativePath, String queryPath,
+      Map<String, dynamic> bodyRequest) async {
+    String canonicalPath = "POST&$relativePath&$queryPath";
+    print("El canonical path es $canonicalPath");
+    //Aquí se genera el JWT
+
+    //Creación de diccionario en dart se llama Map
+    Map<String, dynamic> values = {
+      'sub': accountId,
+      'qsh': getQSH(canonicalPath),
+      'iss': accessKey,
+      'iat': iat,
+      'exp': exp
+    };
+
+    String token;
+
+    final jwt = JWT(values);
+
+    token = jwt.sign(SecretKey(secretKey));
+
+    print("Signed token: $token\n");
+
+    try {
+      final jwt = JWT.verify(token, SecretKey(secretKey));
+      print('Payload ${jwt.payload}');
+    } on JWTExpiredError {
+      print('JWT Expire');
+    } on JWTError catch (ex) {
+      print(ex.message);
+    }
+    //Aquí se realiza la petición al API
+    var client = http.Client();
+    var jsonBodyrequest = jsonEncode(bodyRequest);
+
+    print("Este es el Json BODY: $jsonBodyrequest");
+
+    Map<String, String> headerRequest = {
+      'Authorization': 'JWT $token',
+      'zapiAccessKey': accessKey,
+      'User-Agent': 'ZAPI',
+      'Content-Type': 'application/json'
+    };
+    var url = Uri.https(urlBase, "$contextPath$relativePath");
+
+    if (queryPath.isNotEmpty) {
+      Map<String, dynamic> query = getMapQuery(queryPath);
+      url = Uri.https(urlBase, "$contextPath$relativePath", query);
+    }
+    try {
+      var response =
+          await client.post(url, headers: headerRequest, body: jsonBodyrequest);
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    } finally {
+      client.close();
+    }
+  }
+
+  void putMethod(String relativePath, String queryPath,
+      Map<String, dynamic> bodyRequest) async {
+    String canonicalPath = "PUT&$relativePath&$queryPath";
+    print("El canonical path es $canonicalPath");
+    //Aquí se genera el JWT
+
+    //Creación de diccionario en dart se llama Map
+    Map<String, dynamic> values = {
+      'sub': accountId,
+      'qsh': getQSH(canonicalPath),
+      'iss': accessKey,
+      'iat': iat,
+      'exp': exp
+    };
+
+    String token;
+
+    final jwt = JWT(values);
+
+    token = jwt.sign(SecretKey(secretKey));
+
+    print("Signed token: $token\n");
+
+    try {
+      final jwt = JWT.verify(token, SecretKey(secretKey));
+      print('Payload ${jwt.payload}');
+    } on JWTExpiredError {
+      print('JWT Expire');
+    } on JWTError catch (ex) {
+      print(ex.message);
+    }
+    //Aquí se realiza la petición al API
+    var client = http.Client();
+    var jsonBodyrequest = jsonEncode(bodyRequest);
+
+    print("Este es el Json BODY: $jsonBodyrequest");
+
+    Map<String, String> headerRequest = {
+      'Authorization': 'JWT $token',
+      'zapiAccessKey': accessKey,
+      'User-Agent': 'ZAPI',
+      'Content-Type': 'application/json'
+    };
+    var url = Uri.https(urlBase, "$contextPath$relativePath");
+
+    if (queryPath.isNotEmpty) {
+      Map<String, dynamic> query = getMapQuery(queryPath);
+      url = Uri.https(urlBase, "$contextPath$relativePath", query);
+    }
+    try {
+      var response =
+          await client.put(url, headers: headerRequest, body: jsonBodyrequest);
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
     } finally {
       client.close();
     }
